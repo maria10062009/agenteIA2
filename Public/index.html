@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>IA Analista Corporativa</title>
+    <link rel="stylesheet" href="CSS/estilo.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>🤖 Analista Corporativo</h2>
+    <input type="file" id="docUpload" accept=".pdf">
+    <input type="text" id="pergunta" placeholder="Faça uma pergunta sobre o documento">
+    <button onclick="enviar()">Analisar Documento</button>
+    <div id="resultado">Aguardando análise...</div>
+</div>
+
+<script>
+    async function enviar() {
+        console.log("Botão clicado!");
+        const resultadoDiv = document.getElementById('resultado');
+        const fileInput = document.getElementById('docUpload');
+        const pergunta = document.getElementById('pergunta').value;
+
+        if (!fileInput.files[0] || !pergunta) {
+            alert("Por favor, selecione um arquivo e digite uma pergunta.");
+            return;
+        }
+
+        resultadoDiv.innerText = "Processando... aguarde.";
+
+        const formData = new FormData();
+        formData.append('documento', fileInput.files[0]);
+        formData.append('pergunta', pergunta);
+
+        try {
+            // Seu token integrado aqui
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYWx1bm8iLCJpYXQiOjE3OTE5NzcwNTZ9.IxCBqjBQhvBGbFn8EaCSAd5R1AvH5Dr77mmwbLED2L4";
+
+            const res = await fetch('/api/chat/documento', {
+                method: 'POST',
+                headers: { 
+                    'Authorization': 'Bearer ' + token
+                },
+                body: formData
+            });
+            
+            const data = await res.json();
+            console.log("Resposta do servidor:", data);
+            
+            if (res.ok) {
+                resultadoDiv.innerHTML = marked.parse(data.resposta);
+            } else {
+                resultadoDiv.innerHTML = `<span style="color:red">Erro ${res.status}: ${data.error || 'Erro'}</span>`;
+            }
+        } catch (err) {
+            console.error("Erro de conexão:", err);
+            resultadoDiv.innerHTML = `<span style="color:red">Erro de conexão. Verifique o console!</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>
